@@ -1,1 +1,1 @@
-# topicos_em_analise_de_dados_saude
+Repository for the TÓPICOS ESPECIAIS EM ANÁLISE DE DADOS PARA SAÚDE course, given by prof. Cristiano Jacques Miosso.
