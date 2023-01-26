@@ -1,0 +1,82 @@
+from   matplotlib import pyplot as plt
+import numpy as np
+from   sklearn import svm
+
+def cloudpoints(Npositive,Nnegative):
+    xp =  np.ones(shape = (Npositive,2)) + np.random.randn(Npositive,2) * 0.6 
+    #np.ones:
+        #returns a new array of given shape and data type, where the element's value is set to 1
+        # Parameters: shape = int or sequence of ints (shape of the new array)
+    #np.random.randn:
+        #return a sample (or samples) from the “standard normal” distribution
+        #If positive int_like arguments are provided, randn generates an array of shape (d0, d1, ..., dn), 
+        #filled with random floats sampled from a univariate “normal” (Gaussian) distribution of mean 0 and 
+        #variance 1
+    xn = -np.ones(shape = (Nnegative,2)) + np.random.randn(Nnegative,2) * 0.6 #Negativo para ser simétrico no eixo x
+    return xp,xn
+
+def plot_cloudpoint(x, labels):
+    for n in range(0, x.shape[0]): 
+        c0 = x[n, 0] #first cloud points
+        c1 = x[n, 1] #second clud points
+        if labels[n] == 1:
+            plt.plot(c0, c1, '+r') #this function is used to draw points (markers) in a diagram
+        else: 
+            plt.scatter(c0, c1, facecolor = 'none', edgecolors = 'b') # Scatter plots are used to observe relationship between variables and uses dots to represent the relationship between them
+    plt.xlabel('c_0')
+    plt.ylabel('c-1', rotation = '0.0')
+    plt.grid()
+    plt.show() #starts an event loop, looks for all currently active figure objects, and opens one or more interactive windows that display your figure or figures
+    
+def evaluate_performance(s, x, labels):
+    results = s.predict(x) #this function enables us to predict the labels of the data values on the basis of the trained model
+    tp = len(np.where([results[n] == 1 and labels[n] == 1 for n in range(0,len(results))])[0]) # np.where()[0] = mostra somente as linhas (0 = primeira dimensão)
+    tn = len(np.where([results[n] == 0 and labels[n] == 0 for n in range(0,len(results))])[0])
+    fp = len(np.where([results[n] == 1 and labels[n] == 0 for n in range(0,len(results))])[0])
+    fn = len(np.where([results[n] == 0 and labels[n] == 1 for n in range(0,len(results))])[0])
+    p = tp + fn # total of positive results
+    n = tn + fp # total of positive results
+    accuracy = (tp + tn) / (p + n)
+    precision = tp / (tp + fp)
+    return tp, tn, fp, fn, accuracy, precision
+        
+if __name__ == '__main__': 
+    Npositive_train = 1000
+    Nnegative_train = 1000
+    Npositive_test = 300
+    Nnegative_test = 300
+    xp_train, xn_train = cloudpoints(Npositive_train, Nnegative_train) #random data for training
+    print(xp_train)
+    
+    x_train = np.zeros(shape = (Npositive_train + Nnegative_train, 2))
+    x_train[: Npositive_train, :] = xp_train #positive values
+    x_train[Npositive_train :, :] = xn_train #negative values
+    labels_train = np.zeros(shape = (Npositive_train + Nnegative_train,))
+    labels_train[: Npositive_train] = 1
+    labels_train[Npositive_train] = 0
+    plot_cloudpoint(x_train, labels_train)
+    
+    xp_test, xn_test = cloudpoints(Npositive_test, Nnegative_test) #random data for test (DIFFERENT FROM TRAINING)
+    x_test = np.zeros(shape = (Npositive_test + Nnegative_test, 2))
+    x_test[: Npositive_test, :] = xp_test
+    x_test[Npositive_test :, :] = xn_test
+    labels_test = np.zeros(shape = (Npositive_test + Nnegative_test,))
+    labels_test[: Npositive_test] = 1
+    labels_test[Npositive_test :] = 0 
+    
+    s = svm.SVC() #SVM ready fo implementation
+    s.fit(x_train,labels_train) #training function
+    print(s.predict([[1,1]]))
+    print(s.predict([[-1,-1]]))
+    print(s.predict([[1.3,1.1]]))
+    print(s.predict([[-1.1,-1.2]]))
+    print(s.predict([[0,0]]))
+    print(s.predict([[1.,-1]]))
+    
+    tp, tn, fp, fn, accuracy, precision = evaluate_performance(s, x_test, labels_test)
+    print(tp)
+    print(tn)
+    print(fp)
+    print(fn)
+    print(accuracy)
+    print(precision)
